@@ -31,7 +31,6 @@ int main(int argc, char* argv[]) {
     std::string in;
     for (int i = 0; i < argc; i++) {
         in = argv[i];
-        std::cout << in << std::endl;
         if (in == "-dir") {
             i++;
             if (i >= argc) {
@@ -98,11 +97,6 @@ int main(int argc, char* argv[]) {
             objs.push_back(nu);
             num += 1;
         }
-    }
-    for (int i = 0; i < objs.size(); i++) {
-        std::cout << i << "....." << std::endl;
-        std::cout << objs[i].name << std::endl;
-        std::cout << objs[i].number << std::endl;
     }
     fs::path tems = p/".gonmake";
     fs::create_directory(tems);
