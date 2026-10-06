@@ -13,6 +13,14 @@
 ・パソコン
 
 ## 使い方
+
+
+### 基本の形
+```
+gonmake -dir ./
+```
+
+### オプション解説
 **必須** -dir [ディレクトリのパス] デフォルト：``
 
 -o [出力するファイルの名前] デフォルト：`program.exe`
@@ -25,7 +33,7 @@
 
 -lcu [リンカーコマンドの後ろ] デフォルト：`--target=x86_64-w64-mingw32 -fuse-ld=lld -std=c++26 -fdiagnostics-absolute-paths `
 
-### コマンド例
+### 発展コマンド例
 `gonmake -dir "./" -o "program.exe" -cu "--target=x86_64-w64-mingw32 -std=c++26 -O0 -fdiagnostics-absolute-paths -fcolor-diagnostics -fansi-escape-codes"`
 
 ## インストール方法
