@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
         } else if (in == "-lcm") {
             i++;
             if (i >= argc) {
-                std::cerr << "-lcu (link command mae) sitei saretakedo sono sakiga naiyo!" << std::endl; return 1;
+                std::cerr << "-lcm (link command mae) sitei saretakedo sono sakiga naiyo!" << std::endl; return 1;
             }
             in = argv[i];
             linkcommandmae = in;
