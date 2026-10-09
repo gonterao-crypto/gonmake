@@ -29,9 +29,9 @@ gonmake -dir ./
 
 -cu [コマンドの後ろ] デフォルト：`--target=x86_64-w64-mingw32 -std=c++26 -O0 -fdiagnostics-absolute-paths`
 
--lcm [リンカーコマンドの前] デフォルト：`clang++ `
+-lcm [リンカーコマンドの前] デフォルト：`clang++`
 
--lcu [リンカーコマンドの後ろ] デフォルト：`--target=x86_64-w64-mingw32 -fuse-ld=lld -std=c++26 -fdiagnostics-absolute-paths `
+-lcu [リンカーコマンドの後ろ] デフォルト：`--target=x86_64-w64-mingw32 -fuse-ld=lld -std=c++26 -fdiagnostics-absolute-paths`
 
 -noecho デフォルト：`-echo`
 
