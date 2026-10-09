@@ -23,6 +23,7 @@ int main(int argc, char* argv[]) {
     std::string commandusiro = "--target=x86_64-w64-mingw32 -std=c++26 -O0 -fdiagnostics-absolute-paths";
     std::string linkcommandmae = "clang++ ";
     std::string linkcommandusiro = "--target=x86_64-w64-mingw32 -fuse-ld=lld -std=c++26 -fdiagnostics-absolute-paths ";
+    bool isecho = true;
 
     if (argc == 1) {
         std::cerr << "Hikisuu tarinai kara tyanto tuika sitekitene" << std::endl;
@@ -73,6 +74,10 @@ int main(int argc, char* argv[]) {
             }
             in = argv[i];
             linkcommandusiro = in;
+        } else if (in == "-noecho") {
+            isecho = false;
+        } else if (in == "-echo") {
+            isecho = true;
         }
     }
 
@@ -106,7 +111,9 @@ int main(int argc, char* argv[]) {
         buildobj bb = objs[i];
         std::string temsn = (tems/bb.outname).string();
         std::string command = commandmae + bb.name + " -o " + temsn + ".o " + commandusiro;
-        std::cout << command << std::endl;
+        if (isecho) {
+            std::cout << command << std::endl;
+        }
         er = std::system(command.c_str());
         if (er != 0) return 1;
         awasete += (temsn + ".o ");
@@ -116,7 +123,9 @@ int main(int argc, char* argv[]) {
     command += linkcommandusiro;
     command += "-o ";
     command += (p/outname).string();
-    std::cout << command << std::endl;
+    if (isecho) {
+        std::cout << command << std::endl;
+    }
     er = std::system(command.c_str());
     if (er != 0) return 1;
     return 0;
