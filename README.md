@@ -37,6 +37,8 @@ gonmake -dir ./
 
 -echo
 
+-thread [スレッドの数]　デフォルト:`2`
+
 ### 発展コマンド例
 `gonmake -dir "./" -o "program.exe" -cu "--target=x86_64-w64-mingw32 -std=c++26 -O0 -fdiagnostics-absolute-paths -fcolor-diagnostics -fansi-escape-codes"`
 
