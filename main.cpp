@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
+#include <thread>
+#include <atomic>
+#include <syncstream>
 
 namespace fs = std::filesystem;
 
@@ -13,6 +16,71 @@ struct buildobj {
     std::string outname;
 };
 
+struct workerobj {
+    bool isecho;
+    std::string commandmae;
+    std::string commandusiro;
+    fs::path tems;
+    std::vector<buildobj>* objs;
+    std::atomic<int>* index;
+    std::atomic<int>* errork;
+};
+
+void compiletask(workerobj *wo, int id) {
+    std::osyncstream bout{std::cout};
+    if (wo->isecho) bout << "[" << id << "]" << "worker: kido" << std::endl;
+    int mindex = 0;
+    while (true) {
+        mindex = wo->index->fetch_add(1);
+        if (mindex >= wo->objs->size()) break;
+        if (wo->errork->load() != 0) break;
+        buildobj bb = (*(wo->objs))[mindex];
+        std::string temsn = (wo->tems/bb.outname).string();
+        std::string command = wo->commandmae + bb.name + " -o " + temsn + ".o " + wo->commandusiro;
+        if (wo->isecho) {
+            bout << "[" << id << "]" << command << std::endl;
+        }
+        int er = std::system(command.c_str());
+        if (er != 0) {
+            wo->errork->fetch_add(1);
+            break;
+        }
+        bout.emit();
+    }
+    if (wo->isecho) bout << "[" << id << "]" << "worker: syuryo" << std::endl;
+}
+
+
+int getnumberfor10s(std::string &b, int min = 0) {
+    unsigned int kurai = 1;
+    int ret = 0;
+    for (int i = b.length() - 1; i >= min; i--) {
+        char n = b[i];
+        if (n == '1') ret += kurai * 1;
+        else if (n == '2') ret += kurai * 2;
+        else if (n == '3') ret += kurai * 3;
+        else if (n == '4') ret += kurai * 4;
+        else if (n == '5') ret += kurai * 5;
+        else if (n == '6') ret += kurai * 6;
+        else if (n == '7') ret += kurai * 7;
+        else if (n == '8') ret += kurai * 8;
+        else if (n == '9') ret += kurai * 9;
+        else if (n == '0') ret += kurai * 0;
+        else {
+            std::string errormsg = "suuti hennkann sippai! Kuwasikuha, ";
+            errormsg += b;
+            errormsg += " in ";
+            errormsg += n;
+            errormsg += " (";
+            errormsg += std::to_string(i);
+            errormsg += ")";
+            std::cout << errormsg << std::endl;
+        }
+        kurai *= 10;
+    }
+    return ret;
+}
+
 int main(int argc, char* argv[]) {
 
 
@@ -20,9 +88,10 @@ int main(int argc, char* argv[]) {
     fs::path p = "";
     std::string outname = "program.exe";
     std::string commandmae = "ccache clang++ -c ";
-    std::string commandusiro = "--target=x86_64-w64-mingw32 -std=c++26 -O0 -fdiagnostics-absolute-paths";
+    std::string commandusiro = "--target=x86_64-w64-mingw32 -std=c++26 -O0 -fdiagnostics-absolute-paths -fexperimental-library";
     std::string linkcommandmae = "clang++ ";
     std::string linkcommandusiro = "--target=x86_64-w64-mingw32 -fuse-ld=lld -std=c++26 -fdiagnostics-absolute-paths ";
+    int threadcount = 2;
     bool isecho = true;
 
     if (argc == 1) {
@@ -78,6 +147,13 @@ int main(int argc, char* argv[]) {
             isecho = false;
         } else if (in == "-echo") {
             isecho = true;
+        } else if (in == "-thread") {
+            i++;
+            if (i >= argc) {
+                std::cerr << "-thread (thread kazu) sitei saretakedo sono sakiga naiyo!" << std::endl; return 1;
+            }
+            std::string b = argv[i];
+            threadcount = getnumberfor10s(b, 0);
         }
     }
 
@@ -106,29 +182,53 @@ int main(int argc, char* argv[]) {
     fs::path tems = p/".gonmake";
     fs::create_directory(tems);
     std::string awasete = "";
-    int er = 0;
     for (int i = 0; i < objs.size(); i++) {
         buildobj bb = objs[i];
         std::string temsn = (tems/bb.outname).string();
-        std::string command = commandmae + bb.name + " -o " + temsn + ".o " + commandusiro;
+        awasete += (temsn + ".o ");
+    }
+
+    /*
+    
+struct workerobj {
+    bool isecho;
+    std::string commandmae;
+    std::string commandusiro;
+    fs::path tems;
+    std::vector<buildobj> objs;
+    std::atomic<int> index(0);
+}
+    */
+    std::atomic<int> index(0);
+    std::atomic<int> errork(0);
+    workerobj wo;
+    wo.isecho = isecho;
+    wo.commandmae = commandmae;
+    wo.commandusiro = commandusiro;
+    wo.tems = tems;
+    wo.objs = &objs;
+    wo.index = &index;
+    wo.errork = &errork;
+    std::vector<std::thread> threads;
+    for (int i = 0; i < threadcount; i++) {
+        threads.emplace_back(compiletask, &wo, i);
+    }
+    for (int i = 0; i < threadcount; i++) {
+        threads[i].join();
+    }
+    if (wo.errork->load() == 0) {
+        std::string command = linkcommandmae;
+        command += awasete;
+        command += linkcommandusiro;
+        command += "-o ";
+        command += (p/outname).string();
         if (isecho) {
             std::cout << command << std::endl;
         }
-        er = std::system(command.c_str());
+        int er = std::system(command.c_str());
         if (er != 0) return 1;
-        awasete += (temsn + ".o ");
+        return 0;
     }
-    std::string command = linkcommandmae;
-    command += awasete;
-    command += linkcommandusiro;
-    command += "-o ";
-    command += (p/outname).string();
-    if (isecho) {
-        std::cout << command << std::endl;
-    }
-    er = std::system(command.c_str());
-    if (er != 0) return 1;
-    return 0;
 }
 
 /*
