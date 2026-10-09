@@ -89,8 +89,8 @@ int main(int argc, char* argv[]) {
     std::string outname = "program.exe";
     std::string commandmae = "ccache clang++ -c ";
     std::string commandusiro = "--target=x86_64-w64-mingw32 -std=c++26 -O0 -fdiagnostics-absolute-paths -fexperimental-library";
-    std::string linkcommandmae = "clang++ ";
-    std::string linkcommandusiro = "--target=x86_64-w64-mingw32 -fuse-ld=lld -std=c++26 -fdiagnostics-absolute-paths ";
+    std::string linkcommandmae = "clang++";
+    std::string linkcommandusiro = "--target=x86_64-w64-mingw32 -fuse-ld=lld -std=c++26 -fdiagnostics-absolute-paths";
     int threadcount = 2;
     bool isecho = true;
 
@@ -218,9 +218,10 @@ struct workerobj {
     }
     if (wo.errork->load() == 0) {
         std::string command = linkcommandmae;
+        command += " ";
         command += awasete;
         command += linkcommandusiro;
-        command += "-o ";
+        command += " -o ";
         command += (p/outname).string();
         if (isecho) {
             std::cout << command << std::endl;
@@ -229,6 +230,7 @@ struct workerobj {
         if (er != 0) return 1;
         return 0;
     }
+    return 1;
 }
 
 /*
